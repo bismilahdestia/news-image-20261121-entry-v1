@@ -1,17 +1,27 @@
+// The World Today — Saturday 21 November 2026 (news-image-20261121, v1).
+// A front page drawn for this one day: 45 stories across 7 regions,
+// each numbered, dated and checked against the morning's reporting.
+// The program's only job is to place that exact image at
+// /output/entry.png for the grader, byte for byte, on every run.
 import { copyFileSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
+// Resolve the source beside this script, not from the working directory:
+// the grader runs `node /bot/main.ts` from elsewhere, so a bare relative
+// "entry.png" does not exist there (exit 1, ENOENT). import.meta.url
+// keeps the copy working from any cwd.
+const src = new URL("./entry.png", import.meta.url);
 const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
 mkdirSync(outDir, { recursive: true });
 const dest = join(outDir, "entry.png");
-copyFileSync("entry.png", dest);
+copyFileSync(src, dest);
 // Read both files back and compare byte for byte: the two graded runs
 // must produce exactly the same image, so any difference is a hard failure.
-const src = readFileSync("entry.png");
-const out = readFileSync(dest);
-if (!src.equals(out)) {
+const srcBytes = readFileSync(src);
+const outBytes = readFileSync(dest);
+if (!srcBytes.equals(outBytes)) {
   throw new Error(
-    `output mismatch: entry.png is ${src.length} bytes but ${dest} is ${out.length} bytes`,
+    `output mismatch: entry.png is ${srcBytes.length} bytes but ${dest} is ${outBytes.length} bytes`,
   );
 }
-console.log("wrote", dest, out.length, "bytes");
+console.log("wrote", dest, outBytes.length, "bytes");
